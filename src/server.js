@@ -8,29 +8,32 @@ server.use(express.json());
 
 const userList = [];
 const tweetList = [];
+const MAX_TWEETS = 10;
+
 
 server.post("/sign-up", (request, response) => {
   const newUserData = request.body;
   userList.push(newUserData);
-  console.log(userList)
+  response.send(newUserData);
   console.log("OK");
 });
 
 server.post("/tweets", (request, response) => {
   const newTweet = request.body;
-  tweetList.push(newTweet);
+  const avatar = userList.find(u=>newTweet.username===u.username).avatar;
+  tweetList.push({...newTweet, avatar});
+  response.send(newTweet);
   console.log("OK");
 });
 server.get("/tweets", (request, response) => {
-  const lastTweetIndex = tweetList.length-1;
-  let counter = 0;
-  const lastTenTweets = [];
-  while(counter<10){
-    lastTenTweets.push(tweetList[lastTweetIndex-counter]);
-    counter++;
+  const lastTweets = [...tweetList].reverse();
+  if(lastTweets.length<=MAX_TWEETS){
+    response.send(lastTweets);
+  }else{
+    const firstTweetIndex = 0;
+    const lastTweetIndex = 10;
+    response.send(lastTweets.slice(firstTweetIndex, lastTweetIndex));
   }
-  console.log(lastTenTweets);
-  response.send(lastTenTweets);
 });
 server.listen(PORT, () => {
   console.log(`Você está na porta: ${PORT}`);
