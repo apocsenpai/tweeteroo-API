@@ -8,7 +8,6 @@ server.use(express.json());
 
 const userList = [];
 const tweetList = [];
-const MAX_TWEETS = 10;
 
 server.post("/sign-up", (request, response) => {
   const newUserData = request.body;
@@ -37,8 +36,20 @@ server.post("/tweets", (request, response) => {
   response.status(201).send("OK");
 });
 server.get("/tweets", (request, response) => {
+  const MAX_TWEETS = 10;
+  const page = parseInt(request.query.page);
+  if (page < 1) {
+    response.status(400).send("Informe uma página válida!");
+    return;
+  }
   const lastTweets = [...tweetList].reverse();
-  response.send(lastTweets.slice(0, MAX_TWEETS));
+  if (!page || page === 1) {
+    response.send(lastTweets.slice(0, MAX_TWEETS));
+  } else {
+    const firstTweetIndex = MAX_TWEETS * (page - 1) + 1;
+    const lastTweetIndex = MAX_TWEETS * page + 1;
+    response.send(lastTweets.slice(firstTweetIndex, lastTweetIndex));
+  }
 });
 server.get("/tweets/:userName", (request, response) => {
   const { userName } = request.params;
