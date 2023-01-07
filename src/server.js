@@ -10,30 +10,34 @@ const userList = [];
 const tweetList = [];
 const MAX_TWEETS = 10;
 
-
 server.post("/sign-up", (request, response) => {
   const newUserData = request.body;
+  const {username, avatar} = newUserData;
+  if(!username || !avatar){
+    response.status(400).send(`Todos os campos são obrigatórios!`);
+    return;
+  }
   userList.push(newUserData);
-  response.send(newUserData);
-  console.log("OK");
+  response.status(201).send("OK");
 });
 
 server.post("/tweets", (request, response) => {
   const newTweet = request.body;
-  const avatar = userList.find(u=>newTweet.username===u.username).avatar;
-  tweetList.push({...newTweet, avatar});
-  response.send(newTweet);
-  console.log("OK");
+  const {username, tweet} = newTweet;
+  if(!username || !tweet){
+    response.status(400).send(`Todos os campos são obrigatórios!`);
+    return;
+  } else if (!userList.some((u) => u.username === newTweet.username)) {
+    response.status(401).send("Unauthorized");
+    return;
+  }
+  const avatar = userList.find((u) => newTweet.username === u.username).avatar;
+  tweetList.push({ ...newTweet, avatar });
+  response.status(201).send("OK");
 });
 server.get("/tweets", (request, response) => {
   const lastTweets = [...tweetList].reverse();
-  if(lastTweets.length<=MAX_TWEETS){
-    response.send(lastTweets);
-  }else{
-    const firstTweetIndex = 0;
-    const lastTweetIndex = 10;
-    response.send(lastTweets.slice(firstTweetIndex, lastTweetIndex));
-  }
+  response.send(lastTweets.slice(0, MAX_TWEETS));
 });
 server.listen(PORT, () => {
   console.log(`Você está na porta: ${PORT}`);
