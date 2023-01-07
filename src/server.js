@@ -12,7 +12,7 @@ const tweetList = [];
 server.post("/sign-up", (request, response) => {
   const newUserData = request.body;
   const { username, avatar } = newUserData;
-  if (!username || !avatar) {
+  if (!username || !avatar || !isString(username) || !isString(avatar)) {
     response.status(400).send(`Todos os campos são obrigatórios!`);
     return;
   }
@@ -24,7 +24,8 @@ server.post("/tweets", (request, response) => {
   const { tweet } = request.body;
   const { user: username } = request.headers;
   const newTweet = { username, tweet };
-  if (!username || !tweet) {
+
+  if (!username || !tweet || !isString(username) || !isString(tweet)) {
     response.status(400).send(`Todos os campos são obrigatórios!`);
     return;
   } else if (!userList.some((u) => u.username === username)) {
@@ -38,7 +39,7 @@ server.post("/tweets", (request, response) => {
 server.get("/tweets", (request, response) => {
   const MAX_TWEETS = 10;
   const page = parseInt(request.query.page);
-  if (page < 1) {
+  if (page < 1 || typeof(page)!=="number") {
     response.status(400).send("Informe uma página válida!");
     return;
   }
@@ -46,7 +47,7 @@ server.get("/tweets", (request, response) => {
   if (!page || page === 1) {
     response.send(lastTweets.slice(0, MAX_TWEETS));
   } else {
-    const firstTweetIndex = MAX_TWEETS * (page - 1) + 1;
+    const firstTweetIndex = MAX_TWEETS * (page - 1);
     const lastTweetIndex = MAX_TWEETS * page + 1;
     response.send(lastTweets.slice(firstTweetIndex, lastTweetIndex));
   }
@@ -56,6 +57,11 @@ server.get("/tweets/:userName", (request, response) => {
   const userTweets = tweetList.filter((t) => t.username === userName);
   response.send(userTweets);
 });
+
+const isString = (data)=>{
+  return typeof(data)==="string";
+}
+
 server.listen(PORT, () => {
   console.log(`Você está na porta: ${PORT}`);
 });
